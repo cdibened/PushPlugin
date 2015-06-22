@@ -10,10 +10,14 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
+
+import com.q4websystems.Q4App.R;
 
 @SuppressLint("NewApi")
 public class GCMIntentService extends GCMBaseIntentService {
@@ -97,16 +101,22 @@ public class GCMIntentService extends GCMBaseIntentService {
 				defaults = Integer.parseInt(extras.getString("defaults"));
 			} catch (NumberFormatException e) {}
 		}
-		
+
+		//.setSmallIcon(context.getApplicationInfo().icon)
 		NotificationCompat.Builder mBuilder =
 			new NotificationCompat.Builder(context)
 				.setDefaults(defaults)
-				.setSmallIcon(context.getApplicationInfo().icon)
+				.setSmallIcon(getNotificationIcon(context))
 				.setWhen(System.currentTimeMillis())
-				.setContentTitle(extras.getString("title"))
+				.setContentTitle(getAppName(context) + ": " + extras.getString("title"))
 				.setTicker(extras.getString("title"))
 				.setContentIntent(contentIntent)
 				.setAutoCancel(true);
+
+		if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+			mBuilder.setColor(context.getResources().getColor(R.color.main));
+		}
+
 
 		String message = extras.getString("message");
 		if (message != null) {
@@ -134,6 +144,11 @@ public class GCMIntentService extends GCMBaseIntentService {
 		
 		mNotificationManager.notify((String) appName, notId, mBuilder.build());
 	}
+
+    private int getNotificationIcon(Context context) {
+        boolean whiteIcon = (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP);
+        return whiteIcon ? R.drawable.silhouette : context.getApplicationInfo().icon;
+    }
 	
 	private static String getAppName(Context context)
 	{
